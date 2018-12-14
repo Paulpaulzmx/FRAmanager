@@ -7,7 +7,7 @@
             android:title="@string/nav_history"/>
 
         <item
-            android:id="@+id/nav_register"
+            android:id="@+id/nav_stu_list"
             android:icon="@drawable/nav_user_list"
             android:title="@string/nav_student_list"/>
 

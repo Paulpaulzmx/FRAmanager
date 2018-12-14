@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">人脸识别考勤</string>
-    <string name="registered_student">提交注册</string>
-    <string name="hint_name">此处填写注册学生姓名</string>
+    <!--<string name="registered_student">提交注册</string>-->
+    <!--<string name="hint_name">此处填写注册学生姓名</string>-->
     <string name="settings">设置</string>
 
     <string name="nav_history">签到历史</string>
