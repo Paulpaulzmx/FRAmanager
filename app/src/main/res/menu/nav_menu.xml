@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@drawable/nav_history"
+            android:title="@string/nav_history"/>
+
+        <item
+            android:id="@+id/nav_register"
+            android:icon="@drawable/nav_user_list"
+            android:title="@string/nav_student_list"/>
+
+        <item
+            android:id="@+id/nav_time_set"
+            android:icon="@drawable/nav_time_setting"
+            android:title="@string/nav_time_set"/>
+        <!--todo 是否添加主页？-->
+    </group>
+</menu>
