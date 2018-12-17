@@ -6,6 +6,9 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/windowBackGround</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textSize">20dp</item>
     </style>
 
 </resources>

@@ -7,4 +7,5 @@
     <string name="nav_history">签到历史</string>
     <string name="nav_student_list">学生列表</string>
     <string name="nav_time_set">时间设置</string>
+    <string name="hint_input_user_id">在此输入学生姓名</string>
 </resources>
