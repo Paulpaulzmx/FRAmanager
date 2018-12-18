@@ -3,6 +3,7 @@ package com.example.zmx.facerecognitionattendancemanager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.icu.text.UnicodeSetSpanner;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,11 +44,20 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
 
     //用于判断是register还是transmit
     private int request_flag;
+    final int TRANSMIT = 0;
+    final int REGISTER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
+
+        //获取request_flag，-1表示错误
+        Intent intent_flag = getIntent();
+        request_flag = intent_flag.getIntExtra("request_flag", -1);
+
+        Log.d("myactivity", String.valueOf(request_flag));
+        Toast.makeText(TakePhotoActivity.this, String.valueOf(request_flag), Toast.LENGTH_SHORT).show();
 
         //ImageView photo用于显示拍好的图片
         photo = findViewById(R.id.photo);
@@ -74,9 +84,9 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
             imageUri = Uri.fromFile(outputImage);
         }
         //启动相机程序
-        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        startActivityForResult(intent, TAKE_PHOTO);
+        Intent intent_photo = new Intent("android.media.action.IMAGE_CAPTURE");
+        intent_photo.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent_photo, TAKE_PHOTO);
     }
 
     @Override
@@ -103,35 +113,35 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab_photo_upload:
-                //若有图片，则提交
-                if (photo.hasImage()) {
-                    //todo 提交到后台
-                    //新建一个Dialog输入学生姓名（user_id）
-                    final EditText editText = new EditText(TakePhotoActivity.this);
-                    AlertDialog.Builder inputDialog =
-                            new AlertDialog.Builder(TakePhotoActivity.this);
-                    inputDialog.setTitle("在此输入学生姓名").setView(editText);
-                    inputDialog.setPositiveButton("提交",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //点击确定后出现等待Dialog，上传成功后（得到返回数据）消失
-                                    ProgressDialog waitingDialog=
-                                            new ProgressDialog(TakePhotoActivity.this);
-                                    waitingDialog.setMessage("上传中...");
-                                    waitingDialog.setIndeterminate(true);
-                                    waitingDialog.setCancelable(false);
-                                    waitingDialog.show();
+                switch (request_flag) {
+                    case REGISTER:
+                        //若有图片，则提交
+                        if (photo.hasImage()) {
+                            Log.d("activity", "are you ok?");
+                            //新建一个Dialog输入学生姓名（user_id）
+                            final EditText editText = new EditText(TakePhotoActivity.this);
+                            AlertDialog.Builder inputDialog =
+                                    new AlertDialog.Builder(TakePhotoActivity.this);
+                            inputDialog.setTitle("在此输入学生姓名").setView(editText);
+                            inputDialog.setPositiveButton("提交",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            //上传成功后消失
+                                            UploadRequest(editText.getText().toString(), outputImage);
+                                        }
+                                    }).show();
+                            break;
+                        }
+                    case TRANSMIT:
+                        if(photo.hasImage()){
+                            UploadRequest(null, outputImage);
+                            finish();
+                        }
 
-                                    //上传成功后消失
-                                    int result = UploadRegister(editText.getText().toString(), outputImage);
-                                    if(result == 1)
-                                    {
-                                        Toast.makeText(TakePhotoActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
-                                        finish();
-                                    }
-                                }
-                            }).show();
+                        break;
+                    default:
+                        break;
                 }
                 break;
             default:
@@ -141,19 +151,35 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
 
 
     //注册上传函数，成功返回1，否则返回0
-    private int UploadRegister(String user_id, File user_pictrue){
+    private int UploadRequest(String user_id, File user_pictrue) {
+
+        //请求url
+        String url = "http://i229uk.natappfree.cc/";
+
+        //自定义MEDIA_TYPE_PNG格式
         MediaType MEDIA_TYPE_PNG = MediaType.parse(user_pictrue.getName());
         MultipartBody.Builder builder = new MultipartBody.Builder();
         builder.setType(MultipartBody.FORM);
-        builder.addFormDataPart("user_id", user_id);
-        builder.addFormDataPart("register", user_pictrue.getName(), RequestBody.create(MEDIA_TYPE_PNG, user_pictrue));
+
+        //不同请求方式
+        if (request_flag == REGISTER) {
+            url = url + "register";
+            builder.addFormDataPart("user_id", user_id);
+            builder.addFormDataPart("register",
+                    user_pictrue.getName(), RequestBody.create(MEDIA_TYPE_PNG, user_pictrue));
+        } else if (request_flag == TRANSMIT) {
+            url = url + "transmit";
+            builder.addFormDataPart("transmit",
+                    user_pictrue.getName(), RequestBody.create(MEDIA_TYPE_PNG, user_pictrue));
+
+        }
 
         RequestBody requestBody = builder.build();
 
         OkHttpClient okHttpClient = new OkHttpClient();
         Request request = new Request
                 .Builder()
-                .url("http://3p7g5w.natappfree.cc/register")
+                .url(url)
                 .post(requestBody).build();
         Call call = okHttpClient.newCall(request);
 

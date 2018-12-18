@@ -15,6 +15,5 @@
             android:id="@+id/nav_time_set"
             android:icon="@drawable/nav_time_setting"
             android:title="@string/nav_time_set"/>
-        <!--todo 是否添加主页？-->
     </group>
 </menu>

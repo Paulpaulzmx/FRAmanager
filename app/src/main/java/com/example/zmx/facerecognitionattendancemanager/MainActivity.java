@@ -24,6 +24,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    final int TRANSMIT = 0;
+    final int REGISTER = 1;
 
     private DrawerLayout drawerLayout;
 
@@ -187,17 +189,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             //点击扫脸按钮的功能
             case R.id.fab_signature:
+                Intent takePictureIntent = new Intent(
+                        MainActivity.this, TakePhotoActivity.class);
+
                 switch (currentIndex) {
                     case 0:
-                        Toast.makeText(MainActivity.this, "拍照签到", Toast.LENGTH_SHORT).show();
+                        takePictureIntent.putExtra("request_flag", TRANSMIT);
                         break;
                     case 1:
-                        Intent takePictureIntent = new Intent(
-                                MainActivity.this, TakePhotoActivity.class);
-                        startActivity(takePictureIntent);
+                        takePictureIntent.putExtra("request_flag", REGISTER);
                     default:
                         break;
                 }
+
+                startActivity(takePictureIntent);
 
                 break;
             default:
