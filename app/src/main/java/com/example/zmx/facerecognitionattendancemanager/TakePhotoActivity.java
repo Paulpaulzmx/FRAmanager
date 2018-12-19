@@ -1,12 +1,14 @@
 package com.example.zmx.facerecognitionattendancemanager;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.icu.text.UnicodeSetSpanner;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
@@ -22,6 +24,7 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -47,17 +50,48 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
     final int TRANSMIT = 0;
     final int REGISTER = 1;
 
+    private ProgressDialog waitingDialog;
+
+    //Handle处理线程返回数据。0代表成功，1代表出错
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+
+            waitingDialog.dismiss();
+
+            switch (msg.what) {
+                case 200:
+                    Toast.makeText(TakePhotoActivity.this,
+                            msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                    break;
+                case 408:
+                    //请求超时
+                    Toast.makeText(TakePhotoActivity.this,
+                            msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    Toast.makeText(TakePhotoActivity.this,
+                            "未知错误", Toast.LENGTH_SHORT).show();
+            }
+            finish();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_photo);
 
+        //设置等待dialog
+        waitingDialog = new ProgressDialog(TakePhotoActivity.this);
+        waitingDialog.setMessage("上传中...");
+        waitingDialog.setIndeterminate(true);
+        waitingDialog.setCancelable(false);
+
         //获取request_flag，-1表示错误
         Intent intent_flag = getIntent();
         request_flag = intent_flag.getIntExtra("request_flag", -1);
-
-        Log.d("myactivity", String.valueOf(request_flag));
-        Toast.makeText(TakePhotoActivity.this, String.valueOf(request_flag), Toast.LENGTH_SHORT).show();
 
         //ImageView photo用于显示拍好的图片
         photo = findViewById(R.id.photo);
@@ -113,11 +147,19 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab_photo_upload:
+
+                waitingDialog.show();                //上传中...等待dialog
+
                 switch (request_flag) {
+                    case TRANSMIT:
+                        if (photo.hasImage()) {
+                            UploadRequest(null, outputImage);
+                        }
+
+                        break;
                     case REGISTER:
                         //若有图片，则提交
                         if (photo.hasImage()) {
-                            Log.d("activity", "are you ok?");
                             //新建一个Dialog输入学生姓名（user_id）
                             final EditText editText = new EditText(TakePhotoActivity.this);
                             AlertDialog.Builder inputDialog =
@@ -127,19 +169,11 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            //上传成功后消失
                                             UploadRequest(editText.getText().toString(), outputImage);
                                         }
                                     }).show();
                             break;
                         }
-                    case TRANSMIT:
-                        if(photo.hasImage()){
-                            UploadRequest(null, outputImage);
-                            finish();
-                        }
-
-                        break;
                     default:
                         break;
                 }
@@ -151,10 +185,10 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
 
 
     //注册上传函数，成功返回1，否则返回0
-    private int UploadRequest(String user_id, File user_pictrue) {
+    private void UploadRequest(String user_id, File user_pictrue) {
 
         //请求url
-        String url = "http://i229uk.natappfree.cc/";
+        String url = "http://ub5792.natappfree.cc/";
 
         //自定义MEDIA_TYPE_PNG格式
         MediaType MEDIA_TYPE_PNG = MediaType.parse(user_pictrue.getName());
@@ -162,16 +196,16 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
         builder.setType(MultipartBody.FORM);
 
         //不同请求方式
-        if (request_flag == REGISTER) {
-            url = url + "register";
-            builder.addFormDataPart("user_id", user_id);
-            builder.addFormDataPart("register",
-                    user_pictrue.getName(), RequestBody.create(MEDIA_TYPE_PNG, user_pictrue));
-        } else if (request_flag == TRANSMIT) {
+        if (request_flag == TRANSMIT) {
             url = url + "transmit";
             builder.addFormDataPart("transmit",
                     user_pictrue.getName(), RequestBody.create(MEDIA_TYPE_PNG, user_pictrue));
 
+        } else if (request_flag == REGISTER) {
+            url = url + "register";
+            builder.addFormDataPart("user_id", user_id);
+            builder.addFormDataPart("register",
+                    user_pictrue.getName(), RequestBody.create(MEDIA_TYPE_PNG, user_pictrue));
         }
 
         RequestBody requestBody = builder.build();
@@ -186,15 +220,37 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                if (e instanceof SocketTimeoutException) {
+                    //传输出现超时错误
+                    Message msg_timeout = new Message();
+                    msg_timeout.what = 408;
+                    msg_timeout.obj = "请求超时，请检查网络";
+
+                    handler.sendMessage(msg_timeout);
+                }
+
+                //其他错误的处理
+                Message msg_unknown = new Message();
+                msg_unknown.what = -1;
+                msg_unknown.obj = "未知错误";
+                handler.sendMessage(msg_unknown);
+
                 Log.e("internet_error", e.toString());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String response_data = response.body().toString();
+                //请求成功，数据回传
+
+                String response_data = response.body().string();
+
+                Message msg = new Message();
+                msg.what = 200;
+                msg.obj = response_data;
+                handler.sendMessage(msg);
+
                 Log.d("internet_ok", response_data);
             }
         });
-        return 1;
     }
 }
