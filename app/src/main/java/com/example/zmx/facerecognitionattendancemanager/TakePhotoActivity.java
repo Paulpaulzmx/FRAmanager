@@ -58,7 +58,9 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
         @Override
         public void handleMessage(Message msg) {
 
-            waitingDialog.dismiss();
+            if(waitingDialog.isShowing()){
+                waitingDialog.dismiss();
+            }
 
             switch (msg.what) {
                 case 200:
