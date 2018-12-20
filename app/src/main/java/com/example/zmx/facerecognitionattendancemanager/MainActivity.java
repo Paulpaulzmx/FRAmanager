@@ -1,8 +1,12 @@
 package com.example.zmx.facerecognitionattendancemanager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -11,9 +15,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,6 +42,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int currentIndex = 0;
 
+//    private IntentFilter intentFilter;
+//    private NetworkChangeReceiver networkChangeReceiver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,14 +53,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         fragmentManager = getSupportFragmentManager();      //初始化fragmentManager
 
-        //toolbar
-        final Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.mipmap.toolbar_menu);
-        }
+//        //注册监听网络状态的广播
+//        intentFilter = new IntentFilter();
+//        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+//        registerReceiver(networkChangeReceiver, intentFilter);
+
+//        //toolbar
+////        final Toolbar toolbar = findViewById(R.id.toolbar);
+////        setSupportActionBar(toolbar);
+////        ActionBar actionBar = getSupportActionBar();
+////        if (actionBar != null) {
+////            actionBar.setDisplayHomeAsUpEnabled(true);
+////            actionBar.setHomeAsUpIndicator(R.mipmap.toolbar_menu);
+////        }
 
         //drawer_layout抽屉布局
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -234,6 +244,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        unregisterReceiver(networkChangeReceiver);
+//    }
+
     //重写返回键的方法，按返回键后检查抽屉栏是否打开，若打开，关闭它；若未打开，正常的返回即可。
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -242,4 +258,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.onBackPressed();
         }
     }
+//
+//    //获取网络状态内部类，继承广播
+//    private class NetworkChangeReceiver extends BroadcastReceiver {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            ConnectivityManager connectivityManager = (ConnectivityManager)
+//                    getSystemService(Context.CONNECTIVITY_SERVICE);
+//            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+//            if(networkInfo !=null && !networkInfo.isAvailable()){
+//                Toast.makeText(context, "网络连接中断", Toast.LENGTH_SHORT).show();
+//            }
+//
+//        }
+//    }
 }

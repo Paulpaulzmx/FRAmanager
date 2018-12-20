@@ -188,7 +188,7 @@ public class TakePhotoActivity extends AppCompatActivity implements View.OnClick
     private void UploadRequest(String user_id, File user_pictrue) {
 
         //请求url
-        String url = "http://ub5792.natappfree.cc/";
+        String url = "http://72156fb1c1fcb432.natapp.cc/";
 
         //自定义MEDIA_TYPE_PNG格式
         MediaType MEDIA_TYPE_PNG = MediaType.parse(user_pictrue.getName());
