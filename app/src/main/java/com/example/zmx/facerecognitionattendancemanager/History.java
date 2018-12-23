@@ -2,30 +2,36 @@ package com.example.zmx.facerecognitionattendancemanager;
 
 public class History {
 
-    private String rgstTime;
+    private String register_time;
 
-    private String stuName;
+    private String user_id;
 
-    public History(String rgstTime, String stuName) {
-        this.rgstTime = rgstTime;
-        this.stuName = stuName;
+    public History(String register_time, String stuName) {
+        this.register_time = register_time;
+        this.user_id = stuName;
     }
 
-    public String getRgstTime() {
-        return rgstTime;
+    public String getRegister_time() {
+        return register_time;
     }
 
     public String getStuName() {
-        return stuName;
+        return user_id;
     }
 
-    public void setRgstTime(String rgstTime) {
-        this.rgstTime = rgstTime;
+    public void setRegister_time(String register_time) {
+        this.register_time = register_time;
     }
 
     public void setStuName(String stuName) {
-        this.stuName = stuName;
+        this.user_id = stuName;
     }
 
-
+    @Override
+    public String toString() {
+        return "History{" +
+                "register_time='" + register_time + '\'' +
+                ", user_id='" + user_id + '\'' +
+                '}';
+    }
 }

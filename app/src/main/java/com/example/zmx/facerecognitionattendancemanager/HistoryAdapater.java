@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -51,7 +50,7 @@ public class HistoryAdapater extends RecyclerView.Adapter<HistoryAdapater.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         History history = mHistoryList.get(position);
         holder.historyName.setText(history.getStuName());
-        holder.historyTime.setText(history.getRgstTime());
+        holder.historyTime.setText(history.getRegister_time());
     }
 
     @Override

@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -30,7 +33,8 @@ import okhttp3.Response;
 public class HistoryFragment extends Fragment {
 
     private HistoryAdapater adapater;
-    private List<History> historyList = new ArrayList<>();
+    private List<History> historyList;
+
 
 
     @SuppressLint("HandlerLeak")
@@ -41,8 +45,8 @@ public class HistoryFragment extends Fragment {
             switch (msg.what) {
                 case 200:
                     loadingCardView(msg.obj.toString());
-                    Toast.makeText(getActivity(),
-                            msg.obj.toString(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getActivity(),
+//                            msg.obj.toString(), Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     Toast.makeText(getActivity(),
@@ -56,6 +60,7 @@ public class HistoryFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
+        sendRequest();
 
         return view;
     }
@@ -64,6 +69,9 @@ public class HistoryFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+    }
+
+    private void sendRequest(){
         // 发送查询请求
         OkHttpClient client = new OkHttpClient();
 
@@ -95,17 +103,25 @@ public class HistoryFragment extends Fragment {
 
     private void loadingCardView(String jsonData) {
 
-        try {
-            JSONArray jsonArray = new JSONArray(jsonData);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                History history = new History(jsonObject.getString("register_time"), jsonObject.getString("user_id"));
-                historyList.add(history);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+//        try {
+//            JSONArray jsonArray = new JSONArray(jsonData);
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                History history = new History(jsonObject.getString("register_time"), jsonObject.getString("user_id"));
+//                historyList.add(history);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        //Gson解析
+        Gson gson = new Gson();
+        historyList = gson.fromJson(jsonData, new TypeToken<List<History>>() {}.getType());
+        for (History h : historyList) {
+            System.out.println(h.toString());
         }
 
+        //设置布局
         RecyclerView recyclerView = getActivity().findViewById(R.id.recycler_view);
         GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(layoutManager);
